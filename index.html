@@ -2,104 +2,63 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decryptor QR Exambro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Riyu QR Decryptor</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
             --primary: #6366f1;
             --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --card: #1e293b;
             --text: #f8fafc;
         }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
-            background-image: radial-gradient(at top right, #1e1b4b, #0f172a);
             color: var(--text);
+            margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
+            padding: 15px;
         }
 
         .container {
-            background-color: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-            width: 90%;
-            max-width: 500px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            padding: 25px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .content { padding: 25px; }
-
-        .instruction {
-            text-align: center;
-            color: #94a3b8;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .input-group { margin-bottom: 20px; }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #cbd5e1;
-        }
-
-        /* Scanner Styling */
-        #reader {
             width: 100%;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #334155 !important;
-            background: #000;
+            max-width: 450px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
+
+        .header { font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 20px; color: var(--primary); }
+
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
 
         .btn-scan {
             width: 100%;
             background: #10b981;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
         textarea {
             width: 100%;
-            height: 80px;
+            height: 100px;
             background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 12px;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 15px;
             color: white;
+            font-size: 16px; /* Mencegah auto-zoom di iOS */
             box-sizing: border-box;
-            resize: none;
-            outline: none;
         }
 
         .btn-decrypt {
@@ -107,89 +66,57 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
         }
 
-        .btn-decrypt:hover { background: #4f46e5; }
-
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(99, 102, 241, 0.1);
-            border-left: 4px solid var(--primary);
-            border-radius: 8px;
-            display: none;
-            word-break: break-all;
-        }
-        
-        #finalLink { color: #818cf8; text-decoration: none; font-weight: bold; }
+        #result { margin-top: 20px; padding: 15px; background: #334155; border-radius: 12px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"></div>Exambro QR Decryptor By RyzziCyber X Brulz</div>
+    <div class="header">Riyu Decryptor</div>
     
-    <div class="content">
-        <p class="instruction">Gunakan kamera atau tempel kode untuk dekripsi.</p>
+    <div id="reader"></div>
+    <button class="btn-scan" onclick="startScanner()">📸 Scan Kamera Depan</button>
 
-        <div class="input-group">
-            <label>Live Scan (Kamera Depan)</label>
-            <button class="btn-scan" onclick="startScanner()">📸 Aktifkan Kamera</button>
-            <div id="reader"></div>
-        </div>
+    <textarea id="qrInputText" placeholder="Data QR akan muncul di sini..."></textarea>
+    <button class="btn-decrypt" onclick="decryptURL()">DECRYPT DATA</button>
 
-        <div class="input-group" style="text-align: center; color: #475569; font-size: 12px; font-weight: bold; margin: 10px 0;">
-            ATAU MASUKKAN MANUAL
-        </div>
-
-        <div class="input-group">
-            <label>Data QR Code</label>
-            <textarea id="qrInputText" placeholder="Hasil scan akan muncul di sini..."></textarea>
-        </div>
-
-        <button class="btn-decrypt" onclick="decryptURL()">DECRYPT SEKARANG</button>
-
-        <div id="result">
-            <small style="color: #64748b;">Link Terdeteksi:</small><br>
-            <a href="#" id="finalLink" target="_blank"></a>
-        </div>
+    <div id="result">
+        <small style="color: #94a3b8;">Hasil:</small><br>
+        <a href="#" id="finalLink" style="color: #818cf8; word-break: break-all;" target="_blank"></a>
     </div>
 </div>
 
 <script>
-    let html5QrCode;
-
-    async function startScanner() {
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        html5QrCode = new Html5Qrcode("reader");
-
-        try {
-            // Mengakses kamera depan (user)
-            await html5QrCode.start(
-                { facingMode: "user" }, 
-                config,
-                (decodedText) => {
-                    // Jika scan berhasil
-                    document.getElementById('qrInputText').value = decodedText;
-                    stopScanner();
-                    decryptURL(); // Otomatis dekripsi setelah scan
-                }
-            );
-        } catch (err) {
-            alert("Gagal mengakses kamera: " + err);
-        }
+    function startScanner() {
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: { exact: "user" } }, 
+            { fps: 10, qrbox: 200 },
+            (decodedText) => {
+                document.getElementById('qrInputText').value = decodedText;
+                html5QrCode.stop();
+                decryptURL();
+            }
+        ).catch(() => {
+            alert("Kamera depan tidak ditemukan. Mencoba kamera default...");
+            // Fallback ke kamera default jika kamera depan "exact" tidak tersedia
+            startDefaultCamera();
+        });
     }
 
-    function stopScanner() {
-        if (html5QrCode) {
-            html5QrCode.stop().catch(err => console.error(err));
-        }
+    function startDefaultCamera() {
+        new Html5Qrcode("reader").start(
+            { facingMode: "user" },
+            { fps: 10, qrbox: 200 },
+            (text) => { document.getElementById('qrInputText').value = text; }
+        );
     }
 
     function decryptURL() {
@@ -197,16 +124,11 @@
         const resultDiv = document.getElementById('result');
         const finalLink = document.getElementById('finalLink');
 
-        if (textData.trim() === "") {
-            alert("Data kosong!");
-            return;
+        if (textData) {
+            resultDiv.style.display = "block";
+            finalLink.innerText = textData;
+            finalLink.href = textData;
         }
-
-        // Fungsi dekripsi (sesuai logika Anda)
-        let decrypted = textData; 
-        resultDiv.style.display = "block";
-        finalLink.innerText = decrypted;
-        finalLink.href = decrypted;
     }
 </script>
 
