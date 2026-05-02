@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decryptor QR Exambro</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(at top right, #1e1b4b, #0f172a);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 25px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .content { padding: 25px; }
+
+        .instruction {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .input-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        /* Scanner Styling */
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #334155 !important;
+            background: #000;
+        }
+
+        .btn-scan {
+            width: 100%;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            box-sizing: border-box;
+            resize: none;
+            outline: none;
+        }
+
+        .btn-decrypt {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-decrypt:hover { background: #4f46e5; }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            display: none;
+            word-break: break-all;
+        }
+        
+        #finalLink { color: #818cf8; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header"></div>Exambro QR Decryptor By RyzziCyber X Brulz</div>
+    
+    <div class="content">
+        <p class="instruction">Gunakan kamera atau tempel kode untuk dekripsi.</p>
+
+        <div class="input-group">
+            <label>Live Scan (Kamera Depan)</label>
+            <button class="btn-scan" onclick="startScanner()">📸 Aktifkan Kamera</button>
+            <div id="reader"></div>
+        </div>
+
+        <div class="input-group" style="text-align: center; color: #475569; font-size: 12px; font-weight: bold; margin: 10px 0;">
+            ATAU MASUKKAN MANUAL
+        </div>
+
+        <div class="input-group">
+            <label>Data QR Code</label>
+            <textarea id="qrInputText" placeholder="Hasil scan akan muncul di sini..."></textarea>
+        </div>
+
+        <button class="btn-decrypt" onclick="decryptURL()">DECRYPT SEKARANG</button>
+
+        <div id="result">
+            <small style="color: #64748b;">Link Terdeteksi:</small><br>
+            <a href="#" id="finalLink" target="_blank"></a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let html5QrCode;
+
+    async function startScanner() {
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        html5QrCode = new Html5Qrcode("reader");
+
+        try {
+            // Mengakses kamera depan (user)
+            await html5QrCode.start(
+                { facingMode: "user" }, 
+                config,
+                (decodedText) => {
+                    // Jika scan berhasil
+                    document.getElementById('qrInputText').value = decodedText;
+                    stopScanner();
+                    decryptURL(); // Otomatis dekripsi setelah scan
+                }
+            );
+        } catch (err) {
+            alert("Gagal mengakses kamera: " + err);
+        }
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().catch(err => console.error(err));
+        }
+    }
+
+    function decryptURL() {
+        const textData = document.getElementById('qrInputText').value;
+        const resultDiv = document.getElementById('result');
+        const finalLink = document.getElementById('finalLink');
+
+        if (textData.trim() === "") {
+            alert("Data kosong!");
+            return;
+        }
+
+        // Fungsi dekripsi (sesuai logika Anda)
+        let decrypted = textData; 
+        resultDiv.style.display = "block";
+        finalLink.innerText = decrypted;
+        finalLink.href = decrypted;
+    }
+</script>
+
+</body>
+</html>
