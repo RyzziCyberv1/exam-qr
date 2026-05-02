@@ -47,6 +47,7 @@
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 20px;
+            cursor: pointer;
         }
 
         textarea {
@@ -57,7 +58,7 @@
             border-radius: 16px;
             padding: 15px;
             color: white;
-            font-size: 16px; /* Mencegah auto-zoom di iOS */
+            font-size: 16px; 
             box-sizing: border-box;
         }
 
@@ -71,6 +72,7 @@
             font-size: 16px;
             font-weight: bold;
             margin-top: 15px;
+            cursor: pointer;
         }
 
         #result { margin-top: 20px; padding: 15px; background: #334155; border-radius: 12px; display: none; }
@@ -82,7 +84,7 @@
     <div class="header">Riyu Decryptor</div>
     
     <div id="reader"></div>
-    <button class="btn-scan" onclick="startScanner()">📸 Scan Kamera Depan</button>
+    <button class="btn-scan" onclick="startScanner()">📸 Scan Kamera Belakang</button>
 
     <textarea id="qrInputText" placeholder="Data QR akan muncul di sini..."></textarea>
     <button class="btn-decrypt" onclick="decryptURL()">DECRYPT DATA</button>
@@ -96,27 +98,28 @@
 <script>
     function startScanner() {
         const html5QrCode = new Html5Qrcode("reader");
+        
+        // "environment" adalah kode standar untuk kamera belakang
         html5QrCode.start(
-            { facingMode: { exact: "user" } }, 
-            { fps: 10, qrbox: 200 },
+            { facingMode: { exact: "environment" } }, 
+            { fps: 10, qrbox: 250 },
             (decodedText) => {
                 document.getElementById('qrInputText').value = decodedText;
                 html5QrCode.stop();
                 decryptURL();
             }
         ).catch(() => {
-            alert("Kamera depan tidak ditemukan. Mencoba kamera default...");
-            // Fallback ke kamera default jika kamera depan "exact" tidak tersedia
-            startDefaultCamera();
+            // Jika gagal (misal tidak ada kamera belakang), coba akses kamera apa saja yang tersedia
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    document.getElementById('qrInputText').value = decodedText;
+                    html5QrCode.stop();
+                    decryptURL();
+                }
+            ).catch(err => alert("Tidak dapat mengakses kamera belakang."));
         });
-    }
-
-    function startDefaultCamera() {
-        new Html5Qrcode("reader").start(
-            { facingMode: "user" },
-            { fps: 10, qrbox: 200 },
-            (text) => { document.getElementById('qrInputText').value = text; }
-        );
     }
 
     function decryptURL() {
